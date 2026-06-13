@@ -162,9 +162,50 @@
         .difficulty{
             width: 90px;
         }
-        
+        .popup{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            z-index: 10;
+        }
+        .popup {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.popup.hidden {
+  opacity: 0;
+  visibility: hidden; /* Ensures invisible popups can't be clicked */
+}
+        .X{
+            position: fixed;
+            left: 90%;
+            top: -5%;
+            border: 0;
+            border-radius: 1rem;
+
+            padding: 7px;
+            width: 35px;
+            color: rgb(61, 61, 61);
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .restart{
+                        color: rgb(61, 61, 61);
+            font-size: 18px;
+            font-weight: bold;
+        }
 </style>
 <body>
+    <div class="game doodle, popup, popup hidden" id="popup">
+        <button class="X" onclick="closePopup()" id="closepopup">X</button>
+        <img src="IMG_1412.jpg" width=200>
+                <h1>You lost</h1>
+        <button class="restart" onclick="startGame()">Play again?</button>
+    </div>
     <div class="background"></div>
     <div class="game doodle">
         
@@ -201,6 +242,8 @@ const cols = Array.from({ length: 9 }, () => new Set());
 const boxes = Array.from({ length: 9 }, () => new Set());
 const boardNumber = document.getElementById("boardNumber")
 const difficultySelect = document.getElementById("difficulty");
+const closepopupbtn = document.getElementById("closepopup");
+const popupfield = document.getElementById('popup');
 let removals = 20;
 
 
@@ -218,12 +261,21 @@ let hearts = 3;
 
 
 
+function closePopup(){
+
+  popupfield.classList.add('hidden');
+
+
+}
+closepopupbtn.addEventListener('click', closePopup);
 
 function boxId(r, c) {
   return Math.floor(r / 3) * 3 + Math.floor(c / 3);
 }
 function loseGame(){
      gameOver = true;
+
+  popupfield.classList.remove('hidden');
 }
 function canPlace(r, c, num) {
   const b = boxId(r, c);
@@ -457,7 +509,7 @@ function select(r,c){
         }
 
         function startGame() {
-
+closePopup();
             hearts = 3;
                         updateHeart();
             gameOver = false;
