@@ -25,6 +25,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden;
         }
 
         .background {
@@ -35,7 +36,7 @@
             background-size: 112px;
             background-repeat: repeat;
             transform: rotate(-35deg);
-            opacity: 0.5;
+            opacity: 0.3;
 
 
         }
@@ -49,7 +50,7 @@
             background-color: white;
             filter: drop-shadow(0px 0px 50px rgba(93, 93, 93, 0.417));
             padding: 15px;
-            border-radius: 1rem;
+            border-radius: 1.75rem;
 
         }
 
@@ -327,10 +328,10 @@
                     button.dataset.row = r;
                     button.dataset.col = c;
                     button.addEventListener("pointerdown", (e) => {
+                        e.preventDefault();
                         if (e.button === 0 || e.pointerType === "touch") { // left click
                             clickHandler(r, c);
                         } else if (e.button === 2) { // right click
-                            e.preventDefault();
                             toggleFlag(r, c);
                         }
                     });
