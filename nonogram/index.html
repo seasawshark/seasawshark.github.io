@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Nonogram Generator</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+  }
+
+  #game {
+    display: grid;
+    gap: 2px;
+    margin-top: 10px;
+  }
+
+  .cell {
+    width: 28px;
+    height: 28px;
+    background: #eee;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .filled { background: black; }
+  .x { color: red; font-weight: bold; }
+
+  #wrap {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+  }
+
+  #clues {
+    font-size: 12px;
+    white-space: pre;
+  }
+
+  button {
+    margin-top: 10px;
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h2>Nonogram Generator</h2>
+<button onclick="newGame()">Generate New Puzzle</button>
+
+<div id="wrap">
+  <div id="clues"></div>
+  <div id="game"></div>
+</div>
+
+<div id="status"></div>
+
+<script>
+let size = 8;
+let solution = [];
+let state = [];
+let game = document.getElementById("game");
+let status = document.getElementById("status");
+
+function randomGrid() {
+  let grid = [];
+  for (let r = 0; r < size; r++) {
+    let row = [];
+    for (let c = 0; c < size; c++) {
+      row.push(Math.random() < 0.45 ? 1 : 0);
+    }
+    grid.push(row);
+  }
+  return grid;
+}
+
+// remove empty/boring rows/cols patterns a bit
+function cleanGrid(grid) {
+  return grid.map(row => {
+    if (row.every(v => v === 0)) {
+      row[Math.floor(Math.random() * size)] = 1;
+    }
+    return row;
+  });
+}
+
+function getClues(line) {
+  let clues = [];
+  let count = 0;
+
+  for (let v of line) {
+    if (v === 1) count++;
+    else {
+      if (count) clues.push(count);
+      count = 0;
+    }
+  }
+  if (count) clues.push(count);
+  return clues.length ? clues : [0];
+}
+
+function buildClues(grid) {
+  let rowClues = grid.map(getClues);
+
+  let colClues = [];
+  for (let c = 0; c < size; c++) {
+    let col = [];
+    for (let r = 0; r < size; r++) col.push(grid[r][c]);
+    colClues.push(getClues(col));
+  }
+
+  return { rowClues, colClues };
+}
+
+function renderClues(rowClues, colClues) {
+  let text = "";
+
+  text += "ROWS:\n";
+  rowClues.forEach((c, i) => text += i + ": " + c.join(" ") + "\n");
+
+  text += "\nCOLS:\n";
+  colClues.forEach((c, i) => text += i + ": " + c.join(" ") + "\n");
+
+  document.getElementById("clues").innerText = text;
+}
+
+function createGrid() {
+  game.innerHTML = "";
+  game.style.gridTemplateColumns = `repeat(${size}, 28px)`;
+
+  state = Array.from({ length: size }, () => Array(size).fill(0));
+
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      let div = document.createElement("div");
+      div.className = "cell";
+
+      div.onclick = () => {
+        state[r][c] = state[r][c] === 1 ? 0 : 1;
+        render();
+        checkWin();
+      };
+
+      div.oncontextmenu = (e) => {
+        e.preventDefault();
+        state[r][c] = state[r][c] === 2 ? 0 : 2;
+        render();
+      };
+
+      game.appendChild(div);
+    }
+  }
+}
+
+function render() {
+  document.querySelectorAll(".cell").forEach((cell, i) => {
+    let r = Math.floor(i / size);
+    let c = i % size;
+
+    cell.classList.remove("filled", "x");
+    cell.textContent = "";
+
+    if (state[r][c] === 1) cell.classList.add("filled");
+    if (state[r][c] === 2) {
+      cell.classList.add("x");
+      cell.textContent = "X";
+    }
+  });
+}
+
+function checkWin() {
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (solution[r][c] !== state[r][c]) return;
+    }
+  }
+  status.textContent = "🎉 Solved!";
+}
+
+function newGame() {
+  status.textContent = "";
+
+  solution = cleanGrid(randomGrid());
+
+  let { rowClues, colClues } = buildClues(solution);
+  renderClues(rowClues, colClues);
+
+  createGrid();
+  render();
+}
+
+newGame();
+</script>
+
+</body>
+</html>
